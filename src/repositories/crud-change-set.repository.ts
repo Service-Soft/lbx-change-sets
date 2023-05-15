@@ -1,7 +1,7 @@
 import { Getter, inject } from '@loopback/core';
 import { AnyObject, Count, DataObject, DefaultCrudRepository, EntityNotFoundError, Filter, HasManyRepositoryFactory, Options, Where, juggler, repository } from '@loopback/repository';
+import { HttpErrors } from '@loopback/rest';
 import { SecurityBindings, UserProfile, securityId } from '@loopback/security';
-import { sleep } from '../__tests__/fixtures/helpers';
 import { LbxChangeSetsBindings } from '../keys';
 import { Change, ChangeSetType } from '../models';
 import { ChangeSetEntity } from '../models/change-set-entity.model';
@@ -10,6 +10,9 @@ import { ChangeSetRepository } from './change-set.repository';
 import { ChangeRepository } from './change.repository';
 
 type NewChange = Omit<Change, 'id' | 'getId' | 'getIdObject' | 'toJSON' | 'toObject' | 'changeSetId'>;
+
+// TODO: Configure relations to include in change sets
+// TODO: Use a transaction for handling change sets when none is set on the options object and the datasource connector supports it.
 
 /**
  * A base crud repository that automatically handles creation of change sets.
@@ -114,7 +117,7 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
     ): Promise<{entity: T, changedValues: DataObject<T>}> {
         if (changeSet.changeSetEntityId !== entity.id) {
             // eslint-disable-next-line max-len
-            throw new Error('Could not reset the changes from the change set: The changeSet doesn\'t belong to the entity with the given id.');
+            throw new HttpErrors.BadRequest('Could not reset the changes from the change set: The changeSet doesn\'t belong to the entity with the given id.');
         }
         const data: DataObject<T> = {};
         const changes: Change[] = await this.changeSetRepository.changes(changeSet.id).find(undefined, options);
@@ -231,7 +234,9 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
         options?: AnyObject
     ): Promise<T> {
         if (changeSet.changeSetEntityId !== id) {
-            throw new Error('Could not rollback to the given change set: The changeSet doesn\'t belong to the entity with the given id.');
+            throw new HttpErrors.BadRequest(
+                'Could not rollback to the given change set: The changeSet doesn\'t belong to the entity with the given id.'
+            );
         }
         return this.rollbackToDateById(id, changeSet.changedAt, createChangeSet, preserveCreateChangeSet, options);
     }
@@ -323,7 +328,6 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
         preserveCreateChangeSet: boolean = true,
         options?: AnyObject
     ): Promise<Count> {
-        //TODO: Override in soft delete repository and add a filter to only rollback non deleted entities.
         const entitiesToRollback: T[] = await this.find({ where: where }, options);
         await Promise.all(entitiesToRollback.map(e => this.rollbackToDate(e, date, createChangeSet, preserveCreateChangeSet, options)));
         return { count: entitiesToRollback.length };
@@ -358,16 +362,16 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
         if (!force && !changes.length) {
             return;
         }
-        await sleep(1); // TODO Better way To guarantee a different time stamp on change sets.
+        await sleep(1); // TODO: Better way To guarantee a different time stamp on change sets.
         const changeSetData: Omit<ChangeSet, 'id' | 'getId' | 'getIdObject' | 'toJSON' | 'toObject' | 'changes'> = {
             changeSetEntityId: entity.id,
             type: type,
             changedAt: new Date(),
             changedBy: await this.getChangedByUserId()
         };
-        const changeSet: ChangeSet = await this.changeSets(entity.id).create(changeSetData, options); // TODO transaction
+        const changeSet: ChangeSet = await this.changeSets(entity.id).create(changeSetData, options);
         for (const change of changes) {
-            await this.changeSetRepository.changes(changeSet.id).create(change, options); //TODO transaction
+            await this.changeSetRepository.changes(changeSet.id).create(change, options);
         }
     }
 
@@ -456,7 +460,17 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
                 newValue: data[key],
                 changeSetId: changeSet.id
             };
-            await this.changeRepository.create(changeData, options); //TODO transaction
+            await this.changeRepository.create(changeData, options);
         }
     }
+}
+
+/**
+ * Sleeps for the given amount of milliseconds.
+ * You need to await this to work.
+ *
+ * @param ms - The amount of milliseconds everything should sleep.
+ */
+async function sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }

@@ -24,7 +24,7 @@ const tE3: Omit<TestChangeSetEntity, 'id' | 'getId' | 'getIdObject' | 'toJSON' |
 let finishedTE: TestChangeSetEntity;
 
 describe('CrudChangeSetRepository should automatically create change sets', () => {
-    //TODO: transaction test
+    //TODO: Transaction test
 
     it('should automatically create a single changeset on "create"', async () => {
         finishedTE = await testRepository.create(tE); // 1 2

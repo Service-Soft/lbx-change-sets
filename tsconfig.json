@@ -2,8 +2,13 @@
     "$schema": "http://json.schemastore.org/tsconfig",
     "extends": "@loopback/build/config/tsconfig.common.json",
     "compilerOptions": {
-        "strict": true,
         "outDir": "dist",
+        "forceConsistentCasingInFileNames": true,
+        "strict": true,
+        "noImplicitOverride": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
         "rootDir": "src"
     },
     "include": [

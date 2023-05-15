@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { Getter, inject } from '@loopback/core';
-import { AnyObject, Count, DataObject, Where, juggler, repository } from '@loopback/repository';
+import { AnyObject, Count, DataObject, Filter, FilterBuilder, Where, juggler, repository } from '@loopback/repository';
 import { SecurityBindings, UserProfile } from '@loopback/security';
 import { LbxChangeSetsBindings } from '../keys';
 import { ChangeSetType } from '../models';
@@ -25,36 +25,85 @@ export class CrudChangeSetSoftDeleteRepository<T extends ChangeSetSoftDeleteEnti
         @inject(LbxChangeSetsBindings.DATASOURCE_KEY)
         dataSource: juggler.DataSource,
         @repository.getter('ChangeSetRepository')
-        protected changeSetRepositoryGetter: Getter<ChangeSetRepository>,
+        changeSetRepositoryGetter: Getter<ChangeSetRepository>,
         @repository(ChangeRepository)
-        protected changeRepository: ChangeRepository,
+        changeRepository: ChangeRepository,
         @repository(ChangeSetRepository)
-        protected changeSetRepository: ChangeSetRepository,
+        changeSetRepository: ChangeSetRepository,
         @inject.getter(SecurityBindings.USER)
-        readonly getUserProfile: Getter<UserProfile>
+        getUserProfile: Getter<UserProfile>
     ) {
         super(entityClass, dataSource, changeSetRepositoryGetter, changeRepository, changeSetRepository, getUserProfile);
     }
 
     /**
-     * DOES NOT TAKE DELETED ENTITIES INTO CONSIDERATION.
+     * Delete matching records that have been softly deleted including all of their change sets.
      *
-     * Updating matching records with attributes from the data object.
+     * @param where - An additional filter.
+     * @param options - Additional options, eg. Transaction.
+     * @returns The amount of deleted entities.
+     */
+    async deleteAllDeleted(where?: Where<T>, options?: AnyObject): Promise<Count> {
+        where = whereWithDeleted(true, where);
+        return super.deleteAll(where, options);
+    }
+
+    /**
+     * Find matching records that are deleted.
+     *
+     * @param filter - Query filter.
+     * @param options - Options for the operations.
+     * @returns A promise of an array of records found.
+     */
+    async findDeleted(filter?: Filter<T>, options?: AnyObject): Promise<T[]> {
+        filter = new FilterBuilder(filter)
+            .where(whereWithDeleted(true, filter?.where))
+            .build();
+        return super.find(filter, options);
+    }
+
+    /**
+     * Find matching records that are not deleted.
+     *
+     * @param filter - Query filter.
+     * @param options - Options for the operations.
+     * @returns A promise of an array of records found.
+     */
+    async findNonDeleted(filter?: Filter<T>, options?: AnyObject): Promise<T[]> {
+        filter = new FilterBuilder(filter)
+            .where({ ...filter?.where, deleted: false } as Where<T>)
+            .build();
+        return super.find(filter, options);
+    }
+
+    /**
+     * Updating matching records that are deleted with attributes from the data object.
      *
      * @param data - The data to update the entities with.
      * @param where - A filter to only update some entities.
      * @param options - Additional options, eg. Transaction.
      * @returns The amount of updated entities.
      */
-    override async updateAll(data: DataObject<T>, where?: Where<T>, options?: AnyObject): Promise<Count> {
-        // where = where ? { ...where, deleted: false } : { deleted: false } as Where<T>; //TODO why is this conversion necessary?
-        return super.updateAll(data, where, options);
+    async updateAllDeleted(data: DataObject<T>, where?: Where<T>, options?: AnyObject): Promise<Count> {
+        where = whereWithDeleted(true, where);
+        return this.updateAll(data, where, options);
     }
 
     /**
-     * DOES NOT TAKE DELETED ENTITIES INTO CONSIDERATION.
+     * Updating matching records that are not deleted with attributes from the data object.
      *
-     * Rolls back all changes on the entities found with the given where filter to the state of the given date.
+     * @param data - The data to update the entities with.
+     * @param where - A filter to only update some entities.
+     * @param options - Additional options, eg. Transaction.
+     * @returns The amount of updated entities.
+     */
+    async updateAllNonDeleted(data: DataObject<T>, where?: Where<T>, options?: AnyObject): Promise<Count> {
+        where = whereWithDeleted(false, where);
+        return this.updateAll(data, where, options);
+    }
+
+    /**
+     * Rolls back all changes on deleted entities found with the given where filter to the state of the given date.
      *
      * This DOES NOT preserve any changes that happened after the date.
      * Any change sets after the given date will be deleted in the end.
@@ -67,15 +116,40 @@ export class CrudChangeSetSoftDeleteRepository<T extends ChangeSetSoftDeleteEnti
      * @param options - Additional options, eg. Transaction.
      * @returns The updated entity.
      */
-    override async rollbackAllToDate(
+    async rollbackAllDeletedToDate(
         date: Date,
         where?: Where<T>,
         createChangeSet: boolean = true,
         preserveCreateChangeSet: boolean = true,
         options?: AnyObject
     ): Promise<Count> {
-        where = where ? { ...where, deleted: false } : { deleted: false } as Where<T>; //TODO why is this conversion necessary?
-        return super.rollbackAllToDate(date, where, createChangeSet, preserveCreateChangeSet, options);
+        where = whereWithDeleted(true, where);
+        return this.rollbackAllToDate(date, where, createChangeSet, preserveCreateChangeSet, options);
+    }
+
+    /**
+     * Rolls back all changes on not deleted entities found with the given where filter to the state of the given date.
+     *
+     * This DOES NOT preserve any changes that happened after the date.
+     * Any change sets after the given date will be deleted in the end.
+     *
+     * @param date - The date to which the rollback should happen.
+     * @param where - A filter to only rollback some entities.
+     * @param createChangeSet - Whether or not a change set should be created.
+     * @param preserveCreateChangeSet - Whether or not create change sets should be preserved.
+     * In that case the entity gets reset to the state after the create change set. Also, the create change set isn't deleted.
+     * @param options - Additional options, eg. Transaction.
+     * @returns The updated entity.
+     */
+    async rollbackAllNonDeletedToDate(
+        date: Date,
+        where?: Where<T>,
+        createChangeSet: boolean = true,
+        preserveCreateChangeSet: boolean = true,
+        options?: AnyObject
+    ): Promise<Count> {
+        where = whereWithDeleted(false, where);
+        return this.rollbackAllToDate(date, where, createChangeSet, preserveCreateChangeSet, options);
     }
 
     // eslint-disable-next-line jsdoc/require-returns
@@ -92,7 +166,7 @@ export class CrudChangeSetSoftDeleteRepository<T extends ChangeSetSoftDeleteEnti
             return;
         }
         await this.createChangeSet(entity, { deleted: true }, ChangeSetType.DELETE, options, true);
-        // Because entity.deleted is inside the "keysToExcludeFromChangeSets" we don't need to worry about a change set being created twice.
+        // Because entity. is inside the "keysToExcludeFromChangeSets" we don't need to worry about a change set being created twice.
         return this.updateById(entity.id as ID, { deleted: true }, options);
     }
 
@@ -117,7 +191,7 @@ export class CrudChangeSetSoftDeleteRepository<T extends ChangeSetSoftDeleteEnti
      * @returns The amount of softly deleted entities.
      */
     async softDeleteAll(where?: Where<T>, options?: AnyObject): Promise<Count> {
-        where = where ? { ...where, deleted: false } : { deleted: false } as Where<T>; //TODO why is this conversion necessary?
+        where = whereWithDeleted(false, where);
         const entitiesToDelete: T[] = await this.find({ where: where }, options);
         await Promise.all(entitiesToDelete.map(e => this.softDelete(e, options)));
         return { count: entitiesToDelete.length };
@@ -137,8 +211,7 @@ export class CrudChangeSetSoftDeleteRepository<T extends ChangeSetSoftDeleteEnti
         }
         await this.createChangeSet(entity, { ...entity, deleted: false }, ChangeSetType.RESTORE, options, true);
         entity.deleted = false;
-        // Because entity.deleted is inside the "keysToExcludeFromChangeSets" we don't need to worry about a change set being created twice.
-        return this.update(entity, options);
+        return this.updateByIdWithoutChangeSet(entity.id as ID, entity, options);
     }
 
     // eslint-disable-next-line jsdoc/require-returns
@@ -161,9 +234,20 @@ export class CrudChangeSetSoftDeleteRepository<T extends ChangeSetSoftDeleteEnti
      * @returns The amount of restored entities.
      */
     async restoreAll(where?: Where<T>, options?: AnyObject): Promise<Count> {
-        where = where ? { ...where, deleted: true } : { deleted: true } as Where<T>; //TODO why is this conversion necessary?
+        where = whereWithDeleted(true, where);
         const entitiesToRestore: T[] = await this.find({ where: where }, options);
         await Promise.all(entitiesToRestore.map(e => this.restore(e, options)));
         return { count: entitiesToRestore.length };
     }
+}
+
+/**
+ * Adds a delete condition for the given filter.
+ *
+ * @param value - Whether to filter for { deleted: true } or { deleted: false }.
+ * @param where - An existing where clause that should be modified.
+ * @returns A where condition with either { deleted: true } or { deleted: false }.
+ */
+function whereWithDeleted<T extends object>(value: boolean, where?: Where<T>): Where<T> {
+    return { ...where, deleted: value } as Where<T>; //TODO: Why is this conversion necessary?
 }

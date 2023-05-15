@@ -1,4 +1,5 @@
 /* eslint-disable max-len */
+import { Count } from '@loopback/repository';
 import { expect } from '@loopback/testlab';
 import { Change, ChangeSet, ChangeSetType } from '../../models';
 import { TestChangeSetEntity } from '../fixtures/test.model';
@@ -101,5 +102,67 @@ describe('Change sets for finishedTE should have the correct changes', () => {
         expect(changeSets[index].type).to.equal(ChangeSetType.RESTORE);
         const changes: Change[] = changeSets[index].changes;
         expect(changes).to.be.undefined();
+    });
+});
+
+describe('CrudChangeSetSoftDeleteRepository convenience methods should work', () => {
+    beforeEach(async () => {
+        finishedTE = await testRepository.create(tE);
+        await testRepository.softDelete(finishedTE);
+
+        await testRepository.create(tE2);
+    });
+    afterEach(async () => {
+        await testRepository.deleteAll();
+    });
+
+    it('findDeleted', async () => {
+        const entities: TestChangeSetEntity[] = await testRepository.findDeleted();
+        expect(entities.length).to.equal(1);
+        expect(entities[0].deleted).to.equal(true);
+    });
+
+    it('findNonDeleted', async () => {
+        const entities: TestChangeSetEntity[] = await testRepository.findNonDeleted();
+        expect(entities.length).to.equal(1);
+        expect(entities[0].deleted).to.equal(false);
+    });
+
+    it('updateAllDeleted', async () => {
+        const count: Count = await testRepository.updateAllDeleted({ lastName: 'lastNameDeleted' });
+        expect(count.count).to.equal(1);
+        const deletedEntities: TestChangeSetEntity[] = await testRepository.findDeleted();
+        expect(deletedEntities[0].lastName).to.equal('lastNameDeleted');
+    });
+
+    it('updateAllNonDeleted', async () => {
+        const count: Count = await testRepository.updateAllNonDeleted({ lastName: 'lastNameNonDeleted' });
+        expect(count.count).to.equal(1);
+        const nonDeletedEntities: TestChangeSetEntity[] = await testRepository.findNonDeleted();
+        expect(nonDeletedEntities[0].lastName).to.equal('lastNameNonDeleted');
+    });
+
+    it('rollbackAllDeletedToDate', async () => {
+        await testRepository.updateAllDeleted({ lastName: 'lastName' });
+        const count: Count = await testRepository.rollbackAllDeletedToDate(new Date('01-01-1970'));
+        expect(count.count).to.equal(1);
+        const deletedEntities: TestChangeSetEntity[] = await testRepository.findDeleted();
+        expect(deletedEntities[0].lastName).to.equal('Smith');
+    });
+
+    it('rollbackAllNonDeletedToDate', async () => {
+        await testRepository.updateAllNonDeleted({ lastName: 'lastName' });
+        const count: Count = await testRepository.rollbackAllNonDeletedToDate(new Date('01-01-1970'));
+        expect(count.count).to.equal(1);
+        const nonDeletedEntities: TestChangeSetEntity[] = await testRepository.findNonDeleted();
+        expect(nonDeletedEntities[0].lastName).to.equal('Smith');
+    });
+
+    it('deleteAllDeleted', async () => {
+        const allEntitiesPriorDelete: TestChangeSetEntity[] = await testRepository.find();
+        expect(allEntitiesPriorDelete.length).to.equal(2);
+        await testRepository.deleteAllDeleted();
+        const allEntities: TestChangeSetEntity[] = await testRepository.find();
+        expect(allEntities.length).to.equal(1);
     });
 });

@@ -75,7 +75,7 @@ describe('Change sets for finishedTE should have the correct changes', () => {
     let changeSets: ChangeSet[];
     let index: number = 0;
 
-    before(async () => changeSets = await testRepository.changeSets(finishedTE.id).find({ include: ['changes'], order: ['changedAt ASC'] }));
+    before(async () => changeSets = await testRepository.changeSets(finishedTE.id).find({ include: ['changes'], order: ['createdAt ASC'] }));
     afterEach(() => index++);
 
     it('should have the correct length', async () => {
@@ -84,7 +84,7 @@ describe('Change sets for finishedTE should have the correct changes', () => {
     });
 
     it('should have the correct data on changeSet #1', () => {
-        expect(changeSets[index].changedBy).to.equal('42');
+        expect(changeSets[index].createdBy).to.equal('42');
         expect(changeSets[index].type).to.equal(ChangeSetType.CREATE);
         const changes: Change[] = changeSets[index].changes;
         expect(changes.length).to.equal(2);
@@ -99,7 +99,7 @@ describe('Change sets for finishedTE should have the correct changes', () => {
     });
 
     it('should have the correct data on the changeSet #2', () => {
-        expect(changeSets[index].changedBy).to.equal('42');
+        expect(changeSets[index].createdBy).to.equal('42');
         expect(changeSets[index].type).to.equal(ChangeSetType.UPDATE);
         const changes: Change[] = changeSets[index].changes;
         expect(changes.length).to.equal(1);
@@ -110,7 +110,7 @@ describe('Change sets for finishedTE should have the correct changes', () => {
     });
 
     it('should have the correct data on the changeSet #3', () => {
-        expect(changeSets[index].changedBy).to.equal('42');
+        expect(changeSets[index].createdBy).to.equal('42');
         expect(changeSets[index].type).to.equal(ChangeSetType.UPDATE);
         const changes: Change[] = changeSets[index].changes;
         expect(changes.length).to.equal(1);
@@ -121,7 +121,7 @@ describe('Change sets for finishedTE should have the correct changes', () => {
     });
 
     it('should have the correct data on the changeSet #4', () => {
-        expect(changeSets[index].changedBy).to.equal('42');
+        expect(changeSets[index].createdBy).to.equal('42');
         expect(changeSets[index].type).to.equal(ChangeSetType.UPDATE);
         const changes: Change[] = changeSets[index].changes;
         expect(changes.length).to.equal(2);
@@ -136,7 +136,7 @@ describe('Change sets for finishedTE should have the correct changes', () => {
     });
 
     it('should have the correct data on the changeSet #5', () => {
-        expect(changeSets[index].changedBy).to.equal('42');
+        expect(changeSets[index].createdBy).to.equal('42');
         expect(changeSets[index].type).to.equal(ChangeSetType.REPLACE);
         const changes: Change[] = changeSets[index].changes;
         expect(changes.length).to.equal(2);
@@ -151,7 +151,7 @@ describe('Change sets for finishedTE should have the correct changes', () => {
     });
 
     it('should have the correct data on the changeSet #6', () => {
-        expect(changeSets[index].changedBy).to.equal('42');
+        expect(changeSets[index].createdBy).to.equal('42');
         expect(changeSets[index].type).to.equal(ChangeSetType.REPLACE);
         const changes: Change[] = changeSets[index].changes;
         expect(changes.length).to.equal(2);
@@ -208,7 +208,7 @@ describe('CrudChangeSetRepository should be able to rollback change sets', () =>
         await testRepository.updateById(finishedTE.id, { firstName: 'Max', lastName: 'Mustermann' });
         await testRepository.updateById(finishedTE.id, { lastName: 'Smith' });
         finishedTE = await testRepository.findById(finishedTE.id);
-        changeSets = await testRepository.changeSets(finishedTE.id).find({ order: ['changedAt DESC'] });
+        changeSets = await testRepository.changeSets(finishedTE.id).find({ order: ['createdAt DESC'] });
         expect(changeSets.length).to.equal(3);
     });
     afterEach(async () => await testRepository.delete(finishedTE));
@@ -219,9 +219,9 @@ describe('CrudChangeSetRepository should be able to rollback change sets', () =>
         // Smith should be ignored because it was already changed back afterwards in 0.
         await testRepository.resetSingleChangeSet(finishedTE, changeSets[1]);
         const resetChangeSets: ChangeSet[] = (await testRepository.changeSets(finishedTE.id)
-            .find({ include: ['changes'], order: ['changedAt DESC'] }))
+            .find({ include: ['changes'], order: ['createdAt DESC'] }))
             .filter(cs => cs.type === ChangeSetType.RESET);
-        changeSets = await testRepository.changeSets(finishedTE.id).find({ include: ['changes'], order: ['changedAt DESC'] });
+        changeSets = await testRepository.changeSets(finishedTE.id).find({ include: ['changes'], order: ['createdAt DESC'] });
 
         expect(changeSets.length).to.equal(3);
         expect(resetChangeSets.length).to.equal(1);
@@ -238,9 +238,9 @@ describe('CrudChangeSetRepository should be able to rollback change sets', () =>
         // Smith should be ignored because it was already set on creation on 2.
         await testRepository.rollbackToChangeSet(finishedTE, changeSets[2]);
         const resetChangeSets: ChangeSet[] = (await testRepository.changeSets(finishedTE.id)
-            .find({ include: ['changes'], order: ['changedAt DESC'] }))
+            .find({ include: ['changes'], order: ['createdAt DESC'] }))
             .filter(cs => cs.type === ChangeSetType.RESET);
-        changeSets = await testRepository.changeSets(finishedTE.id).find({ include: ['changes'], order: ['changedAt DESC'] });
+        changeSets = await testRepository.changeSets(finishedTE.id).find({ include: ['changes'], order: ['createdAt DESC'] });
         finishedTE = await testRepository.findById(finishedTE.id);
 
         expect(changeSets.length).to.equal(2);
@@ -257,11 +257,11 @@ describe('CrudChangeSetRepository should be able to rollback change sets', () =>
         // 0: Max Mustermann => Max Smith, 1: James Smith => Max Mustermann, 2: undefined => James Smith
         // => Rolling back to before change set should create a change with { firstName; 'James' }.
         // Smith should be ignored because it was already set on creation on 2.
-        await testRepository.rollbackToDate(finishedTE, changeSets[2].changedAt);
+        await testRepository.rollbackToDate(finishedTE, changeSets[2].createdAt);
         const resetChangeSets: ChangeSet[] = (await testRepository.changeSets(finishedTE.id)
-            .find({ include: ['changes'], order: ['changedAt DESC'] }))
+            .find({ include: ['changes'], order: ['createdAt DESC'] }))
             .filter(cs => cs.type === ChangeSetType.RESET);
-        changeSets = await testRepository.changeSets(finishedTE.id).find({ include: ['changes'], order: ['changedAt DESC'] });
+        changeSets = await testRepository.changeSets(finishedTE.id).find({ include: ['changes'], order: ['createdAt DESC'] });
         finishedTE = await testRepository.findById(finishedTE.id);
 
         expect(changeSets.length).to.equal(2);
@@ -282,12 +282,12 @@ describe('CrudChangeSetRepository should be able to rollback change sets', () =>
         // 0: Max Mustermann => Max Smith, 1: James Smith => Max Mustermann, 2: undefined => James Smith
         // => Rolling back to before change set should create a change with { firstName; 'James' }.
         // Smith should be ignored because it was already set on creation on 2.
-        await testRepository.rollbackAllToDate(changeSets[2].changedAt);
+        await testRepository.rollbackAllToDate(changeSets[2].createdAt);
 
         const resetChangeSets: ChangeSet[] = (await testRepository.changeSets(finishedTE.id)
-            .find({ include: ['changes'], order: ['changedAt DESC'] }))
+            .find({ include: ['changes'], order: ['createdAt DESC'] }))
             .filter(cs => cs.type === ChangeSetType.RESET);
-        changeSets = await testRepository.changeSets(finishedTE.id).find({ include: ['changes'], order: ['changedAt DESC'] });
+        changeSets = await testRepository.changeSets(finishedTE.id).find({ include: ['changes'], order: ['createdAt DESC'] });
         finishedTE = await testRepository.findById(finishedTE.id);
 
         expect(changeSets.length).to.equal(2);
@@ -300,9 +300,9 @@ describe('CrudChangeSetRepository should be able to rollback change sets', () =>
         expect(firstNameChange.newValue).to.equal('James');
 
         const resetChangeSets2: ChangeSet[] = (await testRepository.changeSets(finishedTE2.id)
-            .find({ include: ['changes'], order: ['changedAt DESC'] }))
+            .find({ include: ['changes'], order: ['createdAt DESC'] }))
             .filter(cs => cs.type === ChangeSetType.RESET);
-        const changeSets2: ChangeSet[] = await testRepository.changeSets(finishedTE2.id).find({ include: ['changes'], order: ['changedAt DESC'] });
+        const changeSets2: ChangeSet[] = await testRepository.changeSets(finishedTE2.id).find({ include: ['changes'], order: ['createdAt DESC'] });
         finishedTE2 = await testRepository.findById(finishedTE2.id);
 
         expect(changeSets2.length).to.equal(2);

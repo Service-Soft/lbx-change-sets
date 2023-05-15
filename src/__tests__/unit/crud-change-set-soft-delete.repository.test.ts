@@ -53,7 +53,7 @@ describe('Change sets for finishedTE should have the correct changes', () => {
     let changeSets: ChangeSet[];
     let index: number = 0;
 
-    before(async () => changeSets = await testRepository.changeSets(finishedTE.id).find({ include: ['changes'], order: ['changedAt ASC'] }));
+    before(async () => changeSets = await testRepository.changeSets(finishedTE.id).find({ include: ['changes'], order: ['createdAt ASC'] }));
     afterEach(() => index++);
 
     it('should have the correct length', async () => {
@@ -62,7 +62,7 @@ describe('Change sets for finishedTE should have the correct changes', () => {
     });
 
     it('should have the correct data on changeSet #1', () => {
-        expect(changeSets[index].changedBy).to.equal('42');
+        expect(changeSets[index].createdBy).to.equal('42');
         expect(changeSets[index].type).to.equal(ChangeSetType.CREATE);
         const changes: Change[] = changeSets[index].changes;
         expect(changes.length).to.equal(2);
@@ -77,28 +77,28 @@ describe('Change sets for finishedTE should have the correct changes', () => {
     });
 
     it('should have the correct data on changeSet #2', () => {
-        expect(changeSets[index].changedBy).to.equal('42');
+        expect(changeSets[index].createdBy).to.equal('42');
         expect(changeSets[index].type).to.equal(ChangeSetType.DELETE);
         const changes: Change[] = changeSets[index].changes;
         expect(changes).to.be.undefined();
     });
 
     it('should have the correct data on changeSet #3', () => {
-        expect(changeSets[index].changedBy).to.equal('42');
+        expect(changeSets[index].createdBy).to.equal('42');
         expect(changeSets[index].type).to.equal(ChangeSetType.RESTORE);
         const changes: Change[] = changeSets[index].changes;
         expect(changes).to.be.undefined();
     });
 
     it('should have the correct data on changeSet #4', () => {
-        expect(changeSets[index].changedBy).to.equal('42');
+        expect(changeSets[index].createdBy).to.equal('42');
         expect(changeSets[index].type).to.equal(ChangeSetType.DELETE);
         const changes: Change[] = changeSets[index].changes;
         expect(changes).to.be.undefined();
     });
 
     it('should have the correct data on changeSet #5', () => {
-        expect(changeSets[index].changedBy).to.equal('42');
+        expect(changeSets[index].createdBy).to.equal('42');
         expect(changeSets[index].type).to.equal(ChangeSetType.RESTORE);
         const changes: Change[] = changeSets[index].changes;
         expect(changes).to.be.undefined();

@@ -209,7 +209,7 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
         preserveCreateChangeSet: boolean = true,
         options?: AnyObject
     ): Promise<T> {
-        return this.rollbackToDate(entity, changeSet.changedAt, createChangeSet, preserveCreateChangeSet, options);
+        return this.rollbackToDate(entity, changeSet.createdAt, createChangeSet, preserveCreateChangeSet, options);
     }
 
     /**
@@ -238,7 +238,7 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
                 'Could not rollback to the given change set: The changeSet doesn\'t belong to the entity with the given id.'
             );
         }
-        return this.rollbackToDateById(id, changeSet.changedAt, createChangeSet, preserveCreateChangeSet, options);
+        return this.rollbackToDateById(id, changeSet.createdAt, createChangeSet, preserveCreateChangeSet, options);
     }
 
     /**
@@ -262,9 +262,9 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
         options?: AnyObject
     ): Promise<T> {
         const changeSetDateFilter: Filter<ChangeSet> = {
-            where: { changedAt: { gte: date } },
+            where: { createdAt: { gte: date } },
             include: ['changes'],
-            order: ['changedAt DESC']
+            order: ['createdAt DESC']
         };
         const changeSets: ChangeSet[] = (await this.changeSets(entity.id).find(changeSetDateFilter, options));
         let data: DataObject<T> = {};
@@ -366,8 +366,8 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
         const changeSetData: Omit<ChangeSet, 'id' | 'getId' | 'getIdObject' | 'toJSON' | 'toObject' | 'changes'> = {
             changeSetEntityId: entity.id,
             type: type,
-            changedAt: new Date(),
-            changedBy: await this.getChangedByUserId()
+            createdAt: new Date(),
+            createdBy: await this.getCreatedByUserId()
         };
         const changeSet: ChangeSet = await this.changeSets(entity.id).create(changeSetData, options);
         for (const change of changes) {
@@ -433,7 +433,7 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
      *
      * @returns The id of the currently logged in user or undefined if that didn't work.
      */
-    protected async getChangedByUserId(): Promise<string | undefined> {
+    protected async getCreatedByUserId(): Promise<string | undefined> {
         try {
             return (await this.getUserProfile())[securityId];
         }

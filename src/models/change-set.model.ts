@@ -38,7 +38,7 @@ export class ChangeSet extends Entity {
         required: true,
         type: 'date'
     })
-    changedAt: Date;
+    createdAt: Date;
     /**
      * The id of the user that changed something.
      * Is set by using loopback's securityId feature.
@@ -47,7 +47,7 @@ export class ChangeSet extends Entity {
         required: false,
         type: 'string'
     })
-    changedBy?: string;
+    createdBy?: string;
     /**
      * The things that have been changed.
      */

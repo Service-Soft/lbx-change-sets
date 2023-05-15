@@ -84,7 +84,7 @@ If you use transactions they will be used to guarantee that change sets are only
 > INFO: If you have complex relations that should be tracked or rolled back you will probably need to override the corresponding methods.
 
 ### Get change sets
-All existing change sets are available via the normal `@hasMany` property "changes" on your entity and repository. You can however also get them via the `ChangeSetRepository` and `ChangeRepository`.
+All existing change sets are available via the normal `@hasMany` property "changeSets" on your entity and repository. You can however also get them via the `ChangeSetRepository` and `ChangeRepository`.
 
 ### Rollback
 To rollback you can simply call the methods `rollback[ToDate | ToChangeSet...]` on your repository.

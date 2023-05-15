@@ -39,9 +39,10 @@
         "!*/__tests__"
     ],
     "peerDependencies": {
-        "@loopback/security": "^0.8.10",
-        "@loopback/core": "^4.0.10",
-        "@loopback/repository": "^5.1.5"
+        "@loopback/core": "^4",
+        "@loopback/repository": "^5",
+        "@loopback/rest": "^12",
+        "@loopback/security": "^0.8"
     },
     "dependencies": {
         "tslib": "^2.0.0"
@@ -50,6 +51,7 @@
         "@loopback/build": "^9.0.10",
         "@loopback/core": "^4.0.10",
         "@loopback/eslint-config": "^13.0.10",
+        "@loopback/rest": "^12.0.10",
         "@loopback/testlab": "^5.0.10",
         "@types/node": "^14.18.42",
         "eslint": "^8.38.0",

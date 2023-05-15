@@ -14,6 +14,11 @@ jobs:
               run: |
                   cd $GITHUB_WORKSPACE
                   npm i
+            # runs npm i inside the showcase directory
+            - name: npm i
+              run: |
+                  cd $GITHUB_WORKSPACE/showcase
+                  npm i
             # runs test
             - name: Test
               run: |

@@ -8,8 +8,7 @@ import { ChangeSetEntity } from './change-set-entity.model';
 @model()
 export class ChangeSetSoftDeleteEntity extends ChangeSetEntity {
     /**
-     * The id of the changeset.
-     * Uses uuidv4 to generate.
+     * Whether or not the entity is softly deleted.
      */
     @property({
         type: 'boolean',

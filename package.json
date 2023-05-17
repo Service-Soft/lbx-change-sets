@@ -1,6 +1,6 @@
 {
     "name": "lbx-change-sets",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "lbx-change-sets",
     "keywords": [
         "loopback-extension",

@@ -2,6 +2,7 @@ import { Getter, inject } from '@loopback/core';
 import { AnyObject, Count, DataObject, DefaultCrudRepository, EntityNotFoundError, Filter, HasManyRepositoryFactory, Options, Where, juggler, repository } from '@loopback/repository';
 import { HttpErrors } from '@loopback/rest';
 import { SecurityBindings, UserProfile, securityId } from '@loopback/security';
+import { isEqual } from 'lodash';
 import { LbxChangeSetsBindings } from '../keys';
 import { Change, ChangeSetType } from '../models';
 import { ChangeSetEntity } from '../models/change-set-entity.model';
@@ -408,8 +409,10 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
      * @returns Whether or not the given values are not equal.
      */
     protected hasValueChanged(previousValue?: T[keyof T], newValue?: DataObject<T>[keyof T]): boolean {
-        return previousValue !== newValue
-            || JSON.stringify(previousValue) !== JSON.stringify(newValue);
+        if (isEqual(previousValue, newValue) || JSON.stringify(previousValue) === JSON.stringify(newValue)) {
+            return false;
+        }
+        return true;
     }
 
     /**

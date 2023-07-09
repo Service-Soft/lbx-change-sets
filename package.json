@@ -1,6 +1,6 @@
 {
     "name": "lbx-change-sets",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "lbx-change-sets",
     "keywords": [
         "loopback-extension",
@@ -42,7 +42,8 @@
         "@loopback/core": "^4",
         "@loopback/repository": "^5",
         "@loopback/rest": "^12",
-        "@loopback/security": "^0.8"
+        "@loopback/security": "^0.8",
+        "lodash": "^4"
     },
     "dependencies": {
         "tslib": "^2.0.0"
@@ -53,6 +54,7 @@
         "@loopback/eslint-config": "^13.0.10",
         "@loopback/rest": "^12.0.10",
         "@loopback/testlab": "^5.0.10",
+        "@types/lodash": "^4.14.195",
         "@types/node": "^14.18.42",
         "eslint": "^8.38.0",
         "eslint-config-service-soft": "^1.1.0",

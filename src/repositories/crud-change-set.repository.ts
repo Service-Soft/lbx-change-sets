@@ -71,7 +71,6 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
 
     /**
      * Delete matching records including all of their change sets.
-     *
      * @param where - An additional filter.
      * @param options - Additional options, eg. Transaction.
      * @returns The amount of deleted entities.
@@ -86,7 +85,6 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
     /**
      * Delete an entity by id.
      * Also handles the deletion of all change sets.
-     *
      * @param id - Value for the entity id.
      * @param options - Options for the operations.
      * @returns A promise that will be resolve if the operation succeeded or will be rejected if the entity was not found.
@@ -100,7 +98,6 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
      * Resets the changes of a single change set on the given entity to the state before the change set.
      * This DOES preserve any changes that happened after the change set.
      * The given change set gets deleted afterwards.
-     *
      * @param entity - The entity that should be reset.
      * @param changeSet - The change set which changes should be reset.
      * @param createChangeSet - Whether or not a change set should be created.
@@ -117,7 +114,6 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
         options?: AnyObject
     ): Promise<{entity: T, changedValues: DataObject<T>}> {
         if (changeSet.changeSetEntityId !== entity.id) {
-            // eslint-disable-next-line max-len
             throw new HttpErrors.BadRequest('Could not reset the changes from the change set: The changeSet doesn\'t belong to the entity with the given id.');
         }
         const data: DataObject<T> = {};
@@ -145,7 +141,6 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
 
     /**
      * Update an entity by id with property/value pairs in the data object.
-     *
      * @param id - Value for the entity id.
      * @param data - Data attributes to be updated.
      * @param options - Options for the operations.
@@ -169,7 +164,6 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
      * Resets the changes of a single change set on the entity with the given id to the state before the oldest change set.
      * This DOES preserve any changes that happened after the change set.
      * The given change set gets deleted afterwards.
-     *
      * @param id - The id of the entity that should be reset.
      * @param changeSet - The change set which changes should be reset.
      * @param createChangeSet - Whether or not a change set should be created.
@@ -194,7 +188,6 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
      * This DOES NOT preserve any changes that happened after the change set.
      * The given change set and any change sets after that will be deleted in the end.
      * Calls rollbackByDate on the change set date internally.
-     *
      * @param entity - The entity to rollback.
      * @param changeSet - The change set that should be rolled back to.
      * @param createChangeSet - Whether or not a change set should be created.
@@ -218,7 +211,6 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
      * This DOES NOT preserve any changes that happened after the change set.
      * The given change set and any change sets after that will be deleted in the end.
      * Calls rollbackByDate on the change set date internally.
-     *
      * @param id - The id of the entity to rollback.
      * @param changeSet - The change set that should be rolled back to.
      * @param createChangeSet - Whether or not a change set should be created.
@@ -246,7 +238,6 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
      * Rolls back all changes on the given entity that have happened since the given date.
      * This DOES NOT preserve any changes that happened after the date.
      * Any change sets after the given date will be deleted in the end.
-     *
      * @param entity - The entity to rollback.
      * @param date - The date to which the rollback should happen.
      * @param createChangeSet - Whether or not a change set should be created.
@@ -289,7 +280,6 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
      * Rolls back all changes on the entity with the given id that have happened since the given date.
      * This DOES NOT preserve any changes that happened after the date.
      * Any change sets after the given date will be deleted in the end.
-     *
      * @param id - The id of the entity to rollback.
      * @param date - The date to which the rollback should happen.
      * @param createChangeSet - Whether or not a change set should be created.
@@ -313,7 +303,6 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
      * Rolls back all changes on the entities found with the given where filter to the state of the given date.
      * This DOES NOT preserve any changes that happened after the date.
      * Any change sets after the given date will be deleted in the end.
-     *
      * @param date - The date to which the rollback should happen.
      * @param where - A filter to only rollback some entities.
      * @param createChangeSet - Whether or not a change set should be created.
@@ -336,7 +325,6 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
 
     /**
      * Deletes all change sets with their changes for the entity with the given id.
-     *
      * @param id - The id of the entity that should be deleted.
      * @param options - Additional options (e.g. Transaction etc.).
      */
@@ -351,7 +339,6 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
     /**
      * Creates a change set for the related entity id.
      * Also generates the changes from the given data.
-     *
      * @param entity - The entity for which the change set gets created.
      * @param data - The data of the operation eg. The update body.
      * @param type - Whether the change set is for create, update or delete.
@@ -378,7 +365,6 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
 
     /**
      * Get all changes from the given data that should be added to a new change set.
-     *
      * @param entity - The entity that has been changed.
      * @param data - The changed data.
      * @param type - The type of the change set to create.
@@ -403,7 +389,6 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
     /**
      * Checks whether or not a value has actually changed.
      * This is used to determine whether or not a change should be created or not.
-     *
      * @param previousValue - The value before any changes.
      * @param newValue - The value after changes.
      * @returns Whether or not the given values are not equal.
@@ -417,7 +402,6 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
 
     /**
      * Gets the keys of values that should be included in change sets.
-     *
      * @param data - The new values.
      * @returns The keys that should be included in the change set.
      */
@@ -433,12 +417,12 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
 
     /**
      * Tries to get a currently logged in user using @loopback/security.
-     *
      * @returns The id of the currently logged in user or undefined if that didn't work.
      */
     protected async getCreatedByUserId(): Promise<string | undefined> {
         try {
-            return (await this.getUserProfile())[securityId];
+            const userProfile: UserProfile = await this.getUserProfile();
+            return userProfile[securityId] ?? userProfile['id'];
         }
         catch (error) {
             return undefined;
@@ -447,13 +431,11 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
 
     /**
      * Creates the changes for the given change set from the given data.
-     *
      * @param keys - The keys to create changes for.
      * @param changeSet - The changeset to create the changes for.
      * @param data - The data to get the changed values from.
      * @param options - Additional options (e.g. Transaction etc.).
      */
-    // eslint-disable-next-line max-len
     protected async createChangesFromData(keys: (keyof T)[], changeSet: ChangeSet, data: DataObject<T>, options?: AnyObject): Promise<void> {
         const entity: T = await this.findById(changeSet.changeSetEntityId as ID, undefined, options);
         for (const key of keys) {
@@ -471,8 +453,8 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
 /**
  * Sleeps for the given amount of milliseconds.
  * You need to await this to work.
- *
  * @param ms - The amount of milliseconds everything should sleep.
+ * @returns When the amount of milliseconds have passed.
  */
 async function sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));

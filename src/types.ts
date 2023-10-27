@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-empty-interface */
+/* eslint-disable typescript/no-empty-interface */
 /**
  * Interface defining the component's options object.
  */

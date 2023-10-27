@@ -25,13 +25,12 @@ export class TestChangeSetEntityRepository extends CrudChangeSetSoftDeleteReposi
     }
 }
 
-// eslint-disable-next-line max-len
 export function createTestRepositories(): { changeRepository: ChangeRepository, changeSetRepository: ChangeSetRepository, userProfile: UserProfile, testRepository: TestChangeSetEntityRepository } {
     const testDb: juggler.DataSource = new juggler.DataSource({
         name: `db-${Date.now()}`,
         connector: 'memory'
     });
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    // eslint-disable-next-line typescript/no-use-before-define
     const changeRepository: ChangeRepository = new ChangeRepository(testDb, (async () => changeSetRepository));
     const changeSetRepository: ChangeSetRepository = new ChangeSetRepository(testDb, async () => changeRepository);
     const userProfile: UserProfile = { [securityId]: '42' };

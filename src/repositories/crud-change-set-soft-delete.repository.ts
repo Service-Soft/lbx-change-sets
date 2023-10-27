@@ -38,7 +38,6 @@ export class CrudChangeSetSoftDeleteRepository<T extends ChangeSetSoftDeleteEnti
 
     /**
      * Delete matching records that have been softly deleted including all of their change sets.
-     *
      * @param where - An additional filter.
      * @param options - Additional options, eg. Transaction.
      * @returns The amount of deleted entities.
@@ -50,7 +49,6 @@ export class CrudChangeSetSoftDeleteRepository<T extends ChangeSetSoftDeleteEnti
 
     /**
      * Find matching records that are deleted.
-     *
      * @param filter - Query filter.
      * @param options - Options for the operations.
      * @returns A promise of an array of records found.
@@ -64,21 +62,19 @@ export class CrudChangeSetSoftDeleteRepository<T extends ChangeSetSoftDeleteEnti
 
     /**
      * Find matching records that are not deleted.
-     *
      * @param filter - Query filter.
      * @param options - Options for the operations.
      * @returns A promise of an array of records found.
      */
     async findNonDeleted(filter?: Filter<T>, options?: AnyObject): Promise<T[]> {
         filter = new FilterBuilder(filter)
-            .where({ ...filter?.where, deleted: false } as Where<T>)
+            .where(whereWithDeleted(false, filter?.where))
             .build();
         return super.find(filter, options);
     }
 
     /**
      * Updating matching records that are deleted with attributes from the data object.
-     *
      * @param data - The data to update the entities with.
      * @param where - A filter to only update some entities.
      * @param options - Additional options, eg. Transaction.
@@ -91,7 +87,6 @@ export class CrudChangeSetSoftDeleteRepository<T extends ChangeSetSoftDeleteEnti
 
     /**
      * Updating matching records that are not deleted with attributes from the data object.
-     *
      * @param data - The data to update the entities with.
      * @param where - A filter to only update some entities.
      * @param options - Additional options, eg. Transaction.
@@ -107,7 +102,6 @@ export class CrudChangeSetSoftDeleteRepository<T extends ChangeSetSoftDeleteEnti
      *
      * This DOES NOT preserve any changes that happened after the date.
      * Any change sets after the given date will be deleted in the end.
-     *
      * @param date - The date to which the rollback should happen.
      * @param where - A filter to only rollback some entities.
      * @param createChangeSet - Whether or not a change set should be created.
@@ -132,7 +126,6 @@ export class CrudChangeSetSoftDeleteRepository<T extends ChangeSetSoftDeleteEnti
      *
      * This DOES NOT preserve any changes that happened after the date.
      * Any change sets after the given date will be deleted in the end.
-     *
      * @param date - The date to which the rollback should happen.
      * @param where - A filter to only rollback some entities.
      * @param createChangeSet - Whether or not a change set should be created.
@@ -156,7 +149,6 @@ export class CrudChangeSetSoftDeleteRepository<T extends ChangeSetSoftDeleteEnti
     /**
      * Softly deletes the given entity and creates a change set.
      * This simply sets the deleted flag to true.
-     *
      * @param entity - The entity that should be softly deleted.
      * @param options - Additional options, eg. Transaction.
      */
@@ -174,7 +166,6 @@ export class CrudChangeSetSoftDeleteRepository<T extends ChangeSetSoftDeleteEnti
     /**
      * Softly deletes the entity with the given id and creates a change set.
      * This simply sets the deleted flag to true.
-     *
      * @param id - The entity that should be softly deleted.
      * @param options - Additional options, eg. Transaction.
      */
@@ -185,7 +176,6 @@ export class CrudChangeSetSoftDeleteRepository<T extends ChangeSetSoftDeleteEnti
 
     /**
      * Softly deletes all entities found for the given filter that are not already deleted.
-     *
      * @param where - A where filter.
      * @param options - Additional options, eg. Transaction.
      * @returns The amount of softly deleted entities.
@@ -200,7 +190,6 @@ export class CrudChangeSetSoftDeleteRepository<T extends ChangeSetSoftDeleteEnti
     // eslint-disable-next-line jsdoc/require-returns
     /**
      * Restores the given entity.
-     *
      * @param entity - The entity to restore.
      * @param options - Additional options, eg. Transaction.
      */
@@ -217,7 +206,6 @@ export class CrudChangeSetSoftDeleteRepository<T extends ChangeSetSoftDeleteEnti
     // eslint-disable-next-line jsdoc/require-returns
     /**
      * Restores the entity with the given id.
-     *
      * @param id - The id of the entity to restore.
      * @param options - Additional options, eg. Transaction.
      */
@@ -228,7 +216,6 @@ export class CrudChangeSetSoftDeleteRepository<T extends ChangeSetSoftDeleteEnti
 
     /**
      * Restores all entities found for the given filter that were deleted.
-     *
      * @param where - A where filter.
      * @param options - Additional options, eg. Transaction.
      * @returns The amount of restored entities.
@@ -243,7 +230,6 @@ export class CrudChangeSetSoftDeleteRepository<T extends ChangeSetSoftDeleteEnti
 
 /**
  * Adds a delete condition for the given filter.
- *
  * @param value - Whether to filter for { deleted: true } or { deleted: false }.
  * @param where - An existing where clause that should be modified.
  * @returns A where condition with either { deleted: true } or { deleted: false }.

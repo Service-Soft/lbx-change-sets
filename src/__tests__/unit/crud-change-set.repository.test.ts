@@ -1,4 +1,4 @@
-/* eslint-disable max-len */
+
 import { expect } from '@loopback/testlab';
 import { Change, ChangeSet, ChangeSetType } from '../../models';
 import { TestChangeSetEntity } from '../fixtures/test.model';

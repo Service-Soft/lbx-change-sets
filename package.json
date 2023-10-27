@@ -1,6 +1,6 @@
 {
     "name": "lbx-change-sets",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "lbx-change-sets",
     "keywords": [
         "loopback-extension",
@@ -57,7 +57,7 @@
         "@types/lodash": "^4.14.197",
         "@types/node": "^20.5.0",
         "eslint": "^8.47.0",
-        "eslint-config-service-soft": "^1.1.0",
+        "eslint-config-service-soft": "^1.2.2",
         "source-map-support": "^0.5.21",
         "typescript": "~5.1.6"
     }

@@ -1,6 +1,6 @@
-
 import { Count } from '@loopback/repository';
 import { expect } from '@loopback/testlab';
+
 import { Change, ChangeSet, ChangeSetType } from '../../models';
 import { TestChangeSetEntity } from '../fixtures/test.model';
 import { createTestRepositories } from '../fixtures/test.repository';

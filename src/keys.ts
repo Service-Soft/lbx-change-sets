@@ -1,5 +1,6 @@
 /* eslint-disable typescript/no-namespace */
 import { BindingKey, CoreBindings } from '@loopback/core';
+
 import { LbxChangeSetsComponent } from './component';
 
 /**

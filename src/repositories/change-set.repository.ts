@@ -1,9 +1,10 @@
 import { Getter, inject } from '@loopback/core';
 import { DefaultCrudRepository, HasManyRepositoryFactory, juggler, repository } from '@loopback/repository';
+
+import { ChangeRepository } from './change.repository';
 import { LbxChangeSetsBindings } from '../keys';
 import { Change } from '../models';
 import { ChangeSet, ChangeSetRelations } from '../models/change-set.model';
-import { ChangeRepository } from './change.repository';
 
 export class ChangeSetRepository extends DefaultCrudRepository<
     ChangeSet,

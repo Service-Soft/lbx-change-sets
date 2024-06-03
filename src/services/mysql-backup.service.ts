@@ -1,9 +1,20 @@
-import { inject } from '@loopback/core';
-import { IsolationLevel, juggler } from '@loopback/repository';
-import { File } from 'buffer';
 import { exec } from 'child_process';
 import { rm, writeFile } from 'fs/promises';
+import { Stream } from 'stream';
+
+import { inject } from '@loopback/core';
+import { IsolationLevel, juggler } from '@loopback/repository';
+
 import { LbxChangeSetsBindings } from '../keys';
+
+/**
+ * The different types file data might have.
+ */
+export type FileData = string
+    | NodeJS.ArrayBufferView
+    | Iterable<string | NodeJS.ArrayBufferView>
+    | AsyncIterable<string | NodeJS.ArrayBufferView>
+    | Stream;
 
 /**
  * A backup service that uses the mysqldump utility to create and restore backups.
@@ -56,11 +67,11 @@ export abstract class MySqlBackupService {
     }
 
     /**
-     * Restores the backup from the given date.
-     * @param dump - THe mysql dump file to restore from.
+     * Restores the backup from the given data.
+     * @param data - THe mysql dump file data to restore from.
      */
-    async restoreBackup(dump: File): Promise<void> {
-        await this.loadBackup(dump);
+    async restoreBackup(data: FileData): Promise<void> {
+        await this.loadBackup(data);
         await this.restoreMySqlData();
         await this.removeTempRestoreBackup();
     }
@@ -69,7 +80,10 @@ export abstract class MySqlBackupService {
      * Creates a mysql dump and saves it under this.backupTempName.
      */
     protected async createDump(): Promise<void> {
-        await this.execAsync(`mysqldump --all-databases -h ${this.dataSource.settings['host']} -u root -p${this.rootPw} > ${this.backupTempName}`, 'Could not create a mysql dump');
+        await this.execAsync(
+            `mysqldump --all-databases -h ${this.dataSource.settings['host']} -u root -p${this.rootPw} > ${this.backupTempName}`,
+            'Could not create a mysql dump'
+        );
     }
 
     /**
@@ -95,15 +109,18 @@ export abstract class MySqlBackupService {
      * Restores the mysql data from the file under this.restoreBackupTempName.
      */
     async restoreMySqlData(): Promise<void> {
-        await this.execAsync(`mysql -h ${this.dataSource.settings['host']} -u root -p${this.rootPw} < ${this.restoreBackupTempName}`, 'Could not restore the sql dump');
+        await this.execAsync(
+            `mysql -h ${this.dataSource.settings['host']} -u root -p${this.rootPw} < ${this.restoreBackupTempName}`,
+            'Could not restore the sql dump'
+        );
     }
 
     /**
-     * Loads the backup file for the given date into this.restoreBackupTempName.
-     * @param dump - The mysql dump file.
+     * Loads the backup file for the given data into this.restoreBackupTempName.
+     * @param data - The mysql dump file data.
      */
-    protected async loadBackup(dump: File): Promise<void> {
-        await writeFile(this.restoreBackupTempName, dump.stream());
+    protected async loadBackup(data: FileData): Promise<void> {
+        await writeFile(this.restoreBackupTempName, data);
     }
 
     /**
@@ -113,6 +130,7 @@ export abstract class MySqlBackupService {
      */
     protected async execAsync(command: string, errorMessage: string = 'Error executing the command'): Promise<void> {
         return new Promise((resolve, reject) => {
+            // eslint-disable-next-line promise/prefer-await-to-callbacks
             exec(command, (error) => {
                 if (error) {
                     reject(errorMessage);

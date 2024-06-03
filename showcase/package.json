@@ -9,7 +9,7 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "engines": {
-        "node": "14 || 16 || 18 || 19"
+        "node": "18 || 20"
     },
     "scripts": {
         "build": "lb-tsc",
@@ -37,21 +37,21 @@
         "!*/__tests__"
     ],
     "dependencies": {
-        "@loopback/boot": "^6.1.1",
-        "@loopback/core": "^5.1.1",
-        "@loopback/repository": "^6.1.1",
-        "@loopback/rest": "^13.1.1",
-        "@loopback/rest-explorer": "^6.1.1",
-        "@loopback/service-proxy": "^6.1.1",
+        "@loopback/boot": "^7.0.2",
+        "@loopback/core": "^6.0.2",
+        "@loopback/repository": "^7.0.2",
+        "@loopback/rest": "^14.0.2",
+        "@loopback/rest-explorer": "^7.0.2",
+        "@loopback/service-proxy": "^7.0.2",
         "lbx-change-sets": "file:..",
-        "loopback-connector-mysql": "^5.4.4",
-        "tslib": "^2.6.1"
+        "loopback-connector-mysql": "^7.0.10",
+        "tslib": "^2.6.2"
     },
     "devDependencies": {
-        "@loopback/build": "^10.1.1",
-        "@loopback/testlab": "^6.1.1",
-        "@types/node": "^16.18.38",
+        "@loopback/build": "^11.0.2",
+        "@loopback/testlab": "^7.0.2",
+        "@types/node": "^20.14.0",
         "source-map-support": "^0.5.21",
-        "typescript": "~5.1.6"
+        "typescript": "~5.4.5"
     }
 }

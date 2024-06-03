@@ -1,6 +1,6 @@
 {
     "name": "lbx-change-sets",
-    "version": "1.1.2",
+    "version": "7.0.0",
     "description": "lbx-change-sets",
     "keywords": [
         "loopback-extension",
@@ -14,14 +14,15 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "engines": {
-        "node": "14 || 16 || 18 || 19"
+        "node": "18 || 20"
     },
     "scripts": {
         "build": "lb-tsc",
         "build:watch": "lb-tsc --watch",
+        "start": "cd showcase && npm run start",
         "lint": "npm run eslint",
         "lint:fix": "npm run eslint:fix",
-        "eslint": "eslint --report-unused-disable-directives . --max-warnings=0",
+        "eslint": "eslint . --max-warnings=0",
         "eslint:fix": "npm run eslint -- --fix",
         "pretest": "npm run rebuild",
         "test": "lb-mocha --allow-console-logs \"dist/__tests__\"",
@@ -39,26 +40,24 @@
         "!*/__tests__"
     ],
     "peerDependencies": {
-        "@loopback/core": "5",
-        "@loopback/repository": "6",
-        "@loopback/rest": "13",
-        "@loopback/security": "0.10",
+        "@loopback/core": "6",
+        "@loopback/repository": "7",
+        "@loopback/rest": "14",
+        "@loopback/security": "0.11",
         "lodash": "4"
     },
     "dependencies": {
-        "tslib": "^2.6.1"
+        "tslib": "^2.6.2"
     },
     "devDependencies": {
-        "@loopback/build": "^10.1.1",
-        "@loopback/core": "^5.1.1",
-        "@loopback/eslint-config": "^14.0.2",
-        "@loopback/rest": "^13.1.1",
-        "@loopback/testlab": "^6.1.1",
-        "@types/lodash": "^4.14.197",
-        "@types/node": "^20.5.0",
-        "eslint": "^8.47.0",
-        "eslint-config-service-soft": "^1.2.2",
+        "@loopback/build": "^11.0.2",
+        "@loopback/core": "^6.0.2",
+        "@loopback/rest": "^14.0.2",
+        "@loopback/testlab": "^7.0.2",
+        "@types/lodash": "^4.17.4",
+        "@types/node": "^20.14.0",
+        "eslint-config-service-soft": "^1.5.0",
         "source-map-support": "^0.5.21",
-        "typescript": "~5.1.6"
+        "typescript": "~5.4.5"
     }
 }

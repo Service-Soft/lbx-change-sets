@@ -1,7 +1,9 @@
+import { service } from '@loopback/core';
 import { Model, model, property, repository } from '@loopback/repository';
 import { del, get, getModelSchemaRef, param, patch, post, put, requestBody } from '@loopback/rest';
 import { TestChangeSetEntity } from '../models';
 import { TestChangeSetEntityRepository } from '../repositories';
+import { BackupService } from '../services';
 
 @model()
 class RollbackModel extends Model {
@@ -19,8 +21,23 @@ class RollbackModel extends Model {
 export class TestController {
     constructor(
         @repository(TestChangeSetEntityRepository)
-        public testRepository: TestChangeSetEntityRepository
+        public testRepository: TestChangeSetEntityRepository,
+        @service(BackupService)
+        private readonly backupService: BackupService
     ) {}
+
+    @post('/create-backup')
+    async createBackup(): Promise<void> {
+        await this.backupService.createBackup();
+    }
+
+    @post('/restore-backup')
+    async restoreBackup(
+        @requestBody()
+        date: Date
+    ): Promise<void> {
+        await this.backupService.restoreBackupFromDate(date);
+    }
 
     @post('/test')
     async create(

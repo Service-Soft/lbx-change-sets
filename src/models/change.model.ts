@@ -1,4 +1,5 @@
 import { Entity, belongsTo, model, property } from '@loopback/repository';
+
 import { ChangeSet } from './change-set.model';
 
 /**
@@ -7,7 +8,7 @@ import { ChangeSet } from './change-set.model';
 @model()
 export class Change<T = unknown> extends Entity {
     /**
-     * The id of the changeset.
+     * The id of the change.
      * Uses uuidv4 to generate.
      */
     @property({

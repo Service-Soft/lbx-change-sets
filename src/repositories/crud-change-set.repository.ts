@@ -3,12 +3,13 @@ import { AnyObject, Count, DataObject, DefaultCrudRepository, EntityNotFoundErro
 import { HttpErrors } from '@loopback/rest';
 import { SecurityBindings, UserProfile, securityId } from '@loopback/security';
 import { isEqual } from 'lodash';
+
+import { ChangeSetRepository } from './change-set.repository';
+import { ChangeRepository } from './change.repository';
 import { LbxChangeSetsBindings } from '../keys';
 import { Change, ChangeSetType } from '../models';
 import { ChangeSetEntity } from '../models/change-set-entity.model';
 import { ChangeSet } from '../models/change-set.model';
-import { ChangeSetRepository } from './change-set.repository';
-import { ChangeRepository } from './change.repository';
 
 type NewChange = Omit<Change, 'id' | 'getId' | 'getIdObject' | 'toJSON' | 'toObject' | 'changeSetId'>;
 
@@ -112,21 +113,20 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
         createChangeSet: boolean = true,
         preserveCreateChangeSet: boolean = true,
         options?: AnyObject
-    ): Promise<{entity: T, changedValues: DataObject<T>}> {
+    ): Promise<{ entity: T, changedValues: DataObject<T> }> {
         if (changeSet.changeSetEntityId !== entity.id) {
-            throw new HttpErrors.BadRequest('Could not reset the changes from the change set: The changeSet doesn\'t belong to the entity with the given id.');
+            throw new HttpErrors.BadRequest(
+                'Could not reset the changes from the change set: The changeSet doesn\'t belong to the entity with the given id.'
+            );
         }
         const data: DataObject<T> = {};
         const changes: Change[] = await this.changeSetRepository.changes(changeSet.id).find(undefined, options);
         for (const change of changes) {
             const key: keyof T = change.key as keyof T;
             // if (!this.hasValueChanged(change.newValue as T[keyof T], entity[key])) {
-            if (preserveCreateChangeSet && changeSet.type === ChangeSetType.CREATE) {
-                data[key] = change.newValue as T[keyof T];
-            }
-            else {
-                data[key] = change.previousValue as T[keyof T];
-            }
+            data[key] = preserveCreateChangeSet && changeSet.type === ChangeSetType.CREATE
+                ? change.newValue as T[keyof T]
+                : change.previousValue as T[keyof T];
             // }
         }
         await this.updateByIdWithoutChangeSet(entity.id as ID, data, options);
@@ -178,7 +178,7 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
         createChangeSet: boolean = true,
         preserveCreateChangeSet: boolean = true,
         options?: AnyObject
-    ): Promise<{entity: T, changedValues: DataObject<T>}> {
+    ): Promise<{ entity: T, changedValues: DataObject<T> }> {
         const entity: T = await this.findById(id, options);
         return this.resetSingleChangeSet(entity, changeSet, createChangeSet, preserveCreateChangeSet, options);
     }
@@ -258,7 +258,7 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
             include: ['changes'],
             order: ['createdAt DESC']
         };
-        const changeSets: ChangeSet[] = (await this.changeSets(entity.id).find(changeSetDateFilter, options));
+        const changeSets: ChangeSet[] = await this.changeSets(entity.id).find(changeSetDateFilter, options);
         let data: DataObject<T> = {};
         for (const changeSet of changeSets) {
             const changedValues: DataObject<T> = (await this.resetSingleChangeSet(
@@ -394,10 +394,10 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
      * @returns Whether or not the given values are not equal.
      */
     protected hasValueChanged(previousValue?: T[keyof T], newValue?: DataObject<T>[keyof T]): boolean {
-        if (isEqual(previousValue, newValue) || JSON.stringify(previousValue) === JSON.stringify(newValue)) {
-            return false;
-        }
-        return true;
+        return !(
+            isEqual(previousValue, newValue)
+            || JSON.stringify(previousValue) === JSON.stringify(newValue)
+        );
     }
 
     /**
@@ -436,7 +436,12 @@ export class CrudChangeSetRepository<T extends ChangeSetEntity, ID, Relations ex
      * @param data - The data to get the changed values from.
      * @param options - Additional options (e.g. Transaction etc.).
      */
-    protected async createChangesFromData(keys: (keyof T)[], changeSet: ChangeSet, data: DataObject<T>, options?: AnyObject): Promise<void> {
+    protected async createChangesFromData(
+        keys: (keyof T)[],
+        changeSet: ChangeSet,
+        data: DataObject<T>,
+        options?: AnyObject
+    ): Promise<void> {
         const entity: T = await this.findById(changeSet.changeSetEntityId as ID, undefined, options);
         for (const key of keys) {
             const changeData: Omit<Change, 'id' | 'getId' | 'getIdObject' | 'toJSON' | 'toObject'> = {

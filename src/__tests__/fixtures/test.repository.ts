@@ -1,9 +1,10 @@
 import { Getter, inject } from '@loopback/core';
 import { juggler, repository } from '@loopback/repository';
 import { SecurityBindings, UserProfile, securityId } from '@loopback/security';
+
+import { TestChangeSetEntity, TestChangeSetEntityRelations } from './test.model';
 import { ChangeRepository, ChangeSetRepository } from '../../repositories';
 import { CrudChangeSetSoftDeleteRepository } from '../../repositories/crud-change-set-soft-delete.repository';
-import { TestChangeSetEntity, TestChangeSetEntityRelations } from './test.model';
 
 export class TestChangeSetEntityRepository extends CrudChangeSetSoftDeleteRepository<
     TestChangeSetEntity,
@@ -25,21 +26,26 @@ export class TestChangeSetEntityRepository extends CrudChangeSetSoftDeleteReposi
     }
 }
 
-export function createTestRepositories(): { changeRepository: ChangeRepository, changeSetRepository: ChangeSetRepository, userProfile: UserProfile, testRepository: TestChangeSetEntityRepository } {
+export function createTestRepositories(): {
+    changeRepository: ChangeRepository,
+    changeSetRepository: ChangeSetRepository,
+    userProfile: UserProfile,
+    testRepository: TestChangeSetEntityRepository
+} {
     const testDb: juggler.DataSource = new juggler.DataSource({
         name: `db-${Date.now()}`,
         connector: 'memory'
     });
     // eslint-disable-next-line typescript/no-use-before-define
-    const changeRepository: ChangeRepository = new ChangeRepository(testDb, (async () => changeSetRepository));
+    const changeRepository: ChangeRepository = new ChangeRepository(testDb, async () => changeSetRepository);
     const changeSetRepository: ChangeSetRepository = new ChangeSetRepository(testDb, async () => changeRepository);
     const userProfile: UserProfile = { [securityId]: '42' };
     const testRepository: TestChangeSetEntityRepository = new TestChangeSetEntityRepository(
         testDb,
-        (async () => changeSetRepository),
+        async () => changeSetRepository,
         changeRepository,
         changeSetRepository,
-        (async () => userProfile)
+        async () => userProfile
     );
 
     return {

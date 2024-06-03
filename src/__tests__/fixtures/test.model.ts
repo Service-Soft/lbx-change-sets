@@ -1,5 +1,6 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import { model, property } from '@loopback/repository';
+
 import { ChangeSetSoftDeleteEntity } from '../../models/change-set-soft-delete-entity.model';
 
 @model()

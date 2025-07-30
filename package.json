@@ -1,6 +1,6 @@
 {
     "name": "lbx-change-sets",
-    "version": "7.0.0",
+    "version": "7.0.1",
     "description": "lbx-change-sets",
     "keywords": [
         "loopback-extension",
@@ -40,10 +40,10 @@
         "!*/__tests__"
     ],
     "peerDependencies": {
-        "@loopback/core": "6",
-        "@loopback/repository": "7",
-        "@loopback/rest": "14",
-        "@loopback/security": "0.11",
+        "@loopback/core": "*",
+        "@loopback/repository": "*",
+        "@loopback/rest": "*",
+        "@loopback/security": "*",
         "lodash": "4"
     },
     "dependencies": {
